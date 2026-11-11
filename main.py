@@ -8,6 +8,9 @@ from PyQt6.QtGui import QPixmap, QFont, QIcon
 from PyQt6.QtWidgets import QMessageBox, QWidget, QLabel, QVBoxLayout, QHBoxLayout, QFileDialog, QFrame
 from app.db import get_db_connection
 
+# Порог «много в наличии»: пар больше пяти
+MANY_THRESHOLD = 5
+
 
 class ProductWidget(QFrame):
     clicked = pyqtSignal(str)
@@ -99,7 +102,7 @@ class ProductWidget(QFrame):
         line6.setStyleSheet("border: none; background: transparent;")
         info_layout.addWidget(line6)
 
-        line7 = QLabel(f"Количество на складе: {'много' if self.quantity > 5 else 'мало'} ({self.quantity})")
+        line7 = QLabel(f"Количество на складе: {'много' if self.quantity > MANY_THRESHOLD else 'мало'} ({self.quantity})")
         if self.quantity <= 0:
             line7.setStyleSheet("background-color: #87CEEB; border: none;")
         else:
