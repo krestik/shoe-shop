@@ -26,5 +26,5 @@ def get_db_connection():
         conn = psycopg2.connect(**DB_CONFIG)
         return conn
     except OperationalError as e:
-        print(f"Ошибка подключения к БД: {e}")
+        print(f"Ошибка подключения к БД: {e}. Проверьте параметры подключения в config.ini")
         return None
