@@ -684,7 +684,7 @@ class LoginWindow(QtWidgets.QMainWindow):
             if user:
                 self.open_main(user)
             else:
-                QMessageBox.warning(self, "!", "Неверно")
+                QMessageBox.warning(self, "!", "Неверный логин или пароль. Проверьте введённые данные")
 
     def handle_guest(self):
         self.open_main(None)
