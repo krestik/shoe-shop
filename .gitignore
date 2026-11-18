@@ -22,3 +22,8 @@ config.ini
 
 # Локальные резервные копии базы данных
 backups/
+
+# Windows builds and local checks
+ShoeStore-release/
+ShoeStore-release.zip
+user-resources/

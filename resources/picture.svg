@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="240" height="200" viewBox="0 0 240 200">
+<rect width="240" height="200" fill="#f4f4f4"/>
+<path d="M44 110 L66 66 L100 81 L126 106 L184 121 Q198 128 195 143 L43 143 Z" fill="none" stroke="#777" stroke-width="5"/>
+<path d="M47 132 H192 M106 99 L122 87 M120 109 L136 97" fill="none" stroke="#777" stroke-width="4"/>
+<text x="120" y="176" text-anchor="middle" font-family="Arial" font-size="18" fill="#444">Нет фотографии</text>
+</svg>
