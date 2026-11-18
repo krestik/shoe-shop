@@ -7,6 +7,7 @@ from PyQt6.QtCore import Qt, pyqtSignal, QDate
 from PyQt6.QtGui import QPixmap, QFont, QIcon
 from PyQt6.QtWidgets import QMessageBox, QWidget, QLabel, QVBoxLayout, QHBoxLayout, QFileDialog, QFrame
 from app.db import get_db_connection
+from app.paths import bundled_resource, product_image_path, user_images_dir
 
 # Порог «много в наличии»: пар больше пяти
 MANY_THRESHOLD = 5
@@ -50,20 +51,12 @@ class ProductWidget(QFrame):
         self.image_label.setStyleSheet("border: 1px solid black;")
         self.image_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        img_path = None
-        if self.photo:
-            possible = os.path.join(os.path.dirname(__file__), 'resources', self.photo)
-            if os.path.exists(possible):
-                img_path = possible
-            elif os.path.exists(self.photo):
-                img_path = self.photo
-        if not img_path:
-            img_path = os.path.join(os.path.dirname(__file__), 'resources', 'picture.png')
-
-        if os.path.exists(img_path):
-            self.image_label.setPixmap(QPixmap(img_path))
+        img_path = product_image_path(self.photo)
+        pixmap = QPixmap(str(img_path))
+        if not pixmap.isNull():
+            self.image_label.setPixmap(pixmap)
         else:
-            self.image_label.setText("Фото")
+            self.image_label.setText("Нет фотографии")
         main_layout.addWidget(self.image_label)
 
         info_layout = QVBoxLayout()
@@ -179,7 +172,7 @@ class OrderWidget(QWidget):
 class ProductEditWindow(QtWidgets.QMainWindow):
     def __init__(self, parent=None, article=None):
         super().__init__(parent)
-        uic.loadUi(os.path.join(os.path.dirname(__file__), 'app', 'ui', 'product_edit.ui'), self)
+        uic.loadUi(str(bundled_resource('app/ui/product_edit.ui')), self)
         self.article = article
         self.parent_window = parent
         self.current_image_path = None
@@ -259,19 +252,15 @@ class ProductEditWindow(QtWidgets.QMainWindow):
             self.update_image()
 
     def update_image(self):
-        p = None
-        if self.current_image_path:
-            t = os.path.join(os.path.dirname(__file__), 'resources', self.current_image_path)
-            if os.path.exists(t): p = t
-        if not p: p = os.path.join(os.path.dirname(__file__), 'resources', 'picture.png')
-        self.label_image.setPixmap(QPixmap(p).scaled(300, 200, Qt.AspectRatioMode.KeepAspectRatio))
+        pixmap = QPixmap(str(product_image_path(self.current_image_path)))
+        self.label_image.setPixmap(pixmap.scaled(300, 200, Qt.AspectRatioMode.KeepAspectRatio))
 
     def choose_image(self):
         try:
             fp, _ = QFileDialog.getOpenFileName(self, "Выбрать", "", "Images (*.png *.jpg)")
             if fp:
                 fn = os.path.basename(fp)
-                dest_dir = os.path.join(os.path.dirname(__file__), 'resources')
+                dest_dir = str(user_images_dir())
 
                 if not os.path.exists(dest_dir):
                     os.makedirs(dest_dir)
@@ -345,7 +334,7 @@ class OrderEditWindow(QtWidgets.QMainWindow):
         self.order_items = []
 
         try:
-            uic.loadUi(os.path.join(os.path.dirname(__file__), 'app', 'ui', 'order_edit.ui'), self)
+            uic.loadUi(str(bundled_resource('app/ui/order_edit.ui')), self)
 
             self.stats = []
             self.points = []
@@ -522,7 +511,7 @@ class OrderEditWindow(QtWidgets.QMainWindow):
 class OrdersWindow(QtWidgets.QMainWindow):
     def __init__(self, parent=None, is_admin=False):
         super().__init__(parent)
-        uic.loadUi(os.path.join(os.path.dirname(__file__), 'app', 'ui', 'orders_window.ui'), self)
+        uic.loadUi(str(bundled_resource('app/ui/orders_window.ui')), self)
         self.is_admin = is_admin
         self.btn_back.clicked.connect(self.close)
         if self.is_admin:
@@ -566,7 +555,9 @@ class OrdersWindow(QtWidgets.QMainWindow):
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(self, user_data=None):
         super().__init__()
-        uic.loadUi(os.path.join(os.path.dirname(__file__), 'app', 'ui', 'main_window.ui'), self)
+        uic.loadUi(str(bundled_resource('app/ui/main_window.ui')), self)
+        self.label_logo_mini.setPixmap(QPixmap(str(bundled_resource('resources/Icon.png'))))
+        self.all_products = []
         self.user_data = user_data
 
         role = self.user_data[6] if self.user_data else 0
@@ -620,6 +611,9 @@ class MainWindow(QtWidgets.QMainWindow):
             self.all_products = cursor.fetchall()
             conn.close()
             self.update_list()
+        else:
+            self.all_products = []
+            self.update_list()
 
     def update_list(self):
         layout = self.verticalLayout_list
@@ -672,7 +666,8 @@ class MainWindow(QtWidgets.QMainWindow):
 class LoginWindow(QtWidgets.QMainWindow):
     def __init__(self):
         super().__init__()
-        uic.loadUi(os.path.join(os.path.dirname(__file__), 'app', 'ui', 'login.ui'), self)
+        uic.loadUi(str(bundled_resource('app/ui/login.ui')), self)
+        self.label.setPixmap(QPixmap(str(bundled_resource('resources/Icon.png'))))
         self.btn_login.clicked.connect(self.handle_login)
         self.btn_guest.clicked.connect(self.handle_guest)
 
@@ -723,8 +718,12 @@ if __name__ == '__main__':
         QPushButton:disabled { background-color: #CCCCCC; }
     """)
 
-    icon = os.path.join(os.path.dirname(__file__), 'resources', 'icon.ico')
+    icon = str(bundled_resource('resources/Icon.png'))
     if os.path.exists(icon): app.setWindowIcon(QIcon(icon))
+
+    if '--self-check' in sys.argv:
+        from app.diagnostics import run_self_check
+        sys.exit(run_self_check(app, LoginWindow, MainWindow, ProductWidget))
 
     w = LoginWindow()
     w.show()

@@ -1,6 +1,6 @@
 [database]
-host = localhost
-port = 5432
+host = 127.0.0.1
+port = 5433
 name = shoe_store
 user = shoe_user
-password = change_me
+password = replace_with_local_password
