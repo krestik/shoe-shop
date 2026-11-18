@@ -19,3 +19,6 @@ dist/
 config.ini
 .env
 *.log
+
+# Локальные резервные копии базы данных
+backups/
